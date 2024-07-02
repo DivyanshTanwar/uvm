@@ -9,12 +9,21 @@ class ethernet extends uvm_sequence_item;
   
   rand bit [3:0] SA, DA;
   rand bit [7:0] data;
+  rand int darray[];
+  
+  constraint darr {
+    darray.size inside {[0:10]}; 
+    
+    foreach (darray[i])
+      darray[i] inside {[0 : 100]};
+  }
   
   `uvm_object_utils_begin(ethernet)
   
-  `uvm_field_int(SA, UVM_DEFAULT);
-  `uvm_field_int(DA, UVM_DEFAULT);
-  `uvm_field_int(data, UVM_DEFAULT);
+  `uvm_field_int(SA, UVM_DEFAULT | UVM_DEC);
+  `uvm_field_int(DA, UVM_DEFAULT | UVM_DEC);
+  `uvm_field_int(data, UVM_DEFAULT | UVM_DEC);
+  `uvm_field_array_int(darray, UVM_DEFAULT | UVM_DEC);
   
   `uvm_object_utils_end
   
@@ -37,7 +46,7 @@ class sequence1 extends uvm_sequence#(ethernet);
     e1 = ethernet :: type_id :: create("e1");
     start_item(e1);
     assert(e1.randomize()) else `uvm_error("sequence1", "Randomization Failed");
-    `uvm_info("sequence1", "Data Sent : ", UVM_NONE);
+    `uvm_info("sequence1", "Data Sent : ", UVM_LOW);
     e1.print();
     finish_item(e1);
     
@@ -76,7 +85,7 @@ class driver extends uvm_driver#(ethernet);
     forever begin
       
       seq_item_port.get_next_item(e1);
-      `uvm_info("driver", "Data Recieved : ", UVM_NONE);
+      `uvm_info("driver", "Data Recieved : ", UVM_LOW);
       e1.print();
       seq_item_port.item_done();
       
@@ -159,7 +168,7 @@ endclass
 module tb_top;
   
   initial begin
-    
+    uvm_top.set_report_verbosity_level(UVM_LOW);
     run_test("test");
     
   end
